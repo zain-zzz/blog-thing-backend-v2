@@ -17,8 +17,24 @@ app.listen(PORT, async () => {
 //create the server
 
 app.get("/posts", async (req, res) => {
-  res.send(await Posts.findAll())
+
+  const posts = await Posts.findAll()
+
+  let postsToSend = []
+
+  for (let i = 0; i < posts.length; i++) {
+    const user = await Users.findByPk(posts[i].UserId)
+    postsToSend.push({
+      content: posts[i].content,
+      username: user.username
+    }) 
+  }
+
+  res.send(postsToSend)
+
 })
+
+
 
 app.get("/author/:input", async (req, res) => {
   res.send(await Posts.findAll({

@@ -3,10 +3,10 @@ const db = require('../db/db')
 class Posts extends Model { }
 
 Posts.init({
-    username: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
+    // username: {
+    //     type: DataTypes.STRING,
+    //     allowNull: false
+    // },
     content: {
         type: DataTypes.STRING,
         allowNull: false
