@@ -10,7 +10,6 @@ app.use(cors())
 app.use(express.json())
 
 app.listen(PORT, async () => {
-  //await db.sync({force: false})
   console.log(`listening on port ${PORT}`)
 })
 
@@ -23,11 +22,16 @@ app.get("/posts", async (req, res) => {
   let postsToSend = []
 
   for (let i = 0; i < posts.length; i++) {
+
+
     const user = await Users.findByPk(posts[i].UserId)
     postsToSend.push({
       content: posts[i].content,
       username: user.username
     }) 
+
+
+
   }
 
   res.send(postsToSend)
@@ -61,10 +65,20 @@ app.get('/', async (req,res) => {
 app.post("/", async (req, res) => {
   const username = req.body.username
   const content = req.body.content
-  await Posts.create({
+
+  const userToAdd = await Users.findOne({
+    where: {
+      email: username
+    }
+  })
+
+  const postToAdd = await Posts.create({
     content,
     username
   })
+
+  await userToAdd.addPost(postToAdd)
+
   res.send('nice!')
 })
 
@@ -90,20 +104,22 @@ app.post("/username", async (req, res) => {
 
 })
 
-app.post("/getUsername", async(req,res) => {
-  const email = req.body.email
+app.get("/getUsername/:email", async(req,res) => {
+  const email = req.params.email
   
   //console.log(email)
 
-  const user = await Users.findOne({
+  await Users.findOne({
     where: {
       email: email
     }
+  }).then( user => {
+    console.log(user.username)
+    res.status(200).send(user.username)
+  }).catch( error => {
+    console.log(error)
   })
 
-  console.log(user.username)
-
-  res.status(200).send(user.username)
 
 })
 
@@ -111,21 +127,38 @@ app.get("/getPostsByEmail/:email", async (req, res) => {
 
   const email = req.params.email
 
-  if (email != 'undefined') {
-    const user = await Users.findOne({
-      where: {
-        email: email
-      }
-    })
-
-    // const username = user.username
+  await Users.findOne({
+    where: {
+      email: email
+    }
+  }).then( async (user) => {
     res.send(await Posts.findAll({
       where: {
-        //change to email when we sort out the username thing
-        username: email
+        UserId: user.id
       }
     }))
-  }
-  else { res.status(400).send('no email')}
+  }).catch(error => {
+    console.log('error')
+    // lets push this change to github - so that i can clone
+  })
+
+  // if (email != 'undefined') {
+  //   const user = await Users.findOne({
+  //     where: {
+  //       email: email
+  //     }
+  //   })
+  //   console.log(user.id)
+  //   console.log(user.username)
+
+  //   // const username = user.username
+  //   res.send(await Posts.findAll({
+  //     where: {
+  //       //change to email when we sort out the username thing
+  //       UserId: user.id
+  //     }
+  //   }))
+  // }
+  // else { res.status(400).send(['no email']) }
 
 })
