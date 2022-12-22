@@ -28,9 +28,11 @@ app.get("/posts", async (req, res) => {
       postsToSend.push({
         content: posts[i].content,
         username: user.username,
+        email: user.email
       });
     } catch (e) {
-      console.log(`${posts[i].UserId}'s post Failed to load`)
+      posts[i].destroy()
+      //console.log(`${posts[i].UserId}'s post Failed to load`)
     }
   }
 
